@@ -10,7 +10,7 @@
             "name": "daScript: launch",
             "program": "${config:dascript.compiler} ${fileDirname}\\main.das",
             "cwd": "${fileDirname}",
-            "connectTimeout": 4
+            "connectTimeout": 10
         },
         {
             "type": "dascript",

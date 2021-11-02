@@ -16,8 +16,8 @@ def initialize(is_hard_reload: bool)
 
 [export]
 def act(dt: float)
-    if get_key(VK_ESCAPE)
-        schedule_quit_game()
+    // if get_key(VK_ESCAPE)
+    //     schedule_quit_game()
     frameTime = dt
 
     decs_stage("update")
