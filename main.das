@@ -1,6 +1,6 @@
 require daslib/media
 require daslib/decs_boost
-require body_plans
+require characters
 
 var frameTime : float = 0.0
 
