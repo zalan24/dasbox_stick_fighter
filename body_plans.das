@@ -5,6 +5,17 @@ struct PointTransform
     translation: float2 = float2(0.0, 0.0)
     rotation: float = 0.0
 
+def transformTmPoint(tm; point: float2)
+    let sn = sin(tm.rotation)
+    let cs = cos(tm.rotation)
+    return float2(cs*point.x + sn*point.y + tm.translation.x, cs*point.y - sn*point.x + tm.translation.y)
+
+// lhs * (rhs * pos) = (lhs * rhs) * pos
+def transformTmTm(lhs; rhs)
+    return [[PointTransform
+        translation=transformTmPoint(lhs, rhs.translation),
+        rotation=lhs.rotation+rhs.rotation]]
+
 struct Posture
     transforms : table<string; PointTransform>
 
@@ -20,13 +31,20 @@ struct BodyPlan
     postures : table<string; Posture>
     links : array<PointLink>
 
+struct BodyState
+    pointTransforms: table<string; PointTransform>
+
 let shared BodyPlans <- {{
     "knight" => [[BodyPlan
                     points<-[{auto "chest"; "waist"; "knee_left"; "knee_right"; "heel_left"; "heel_right"; "foot_left"; "foot_right";
-                                    "neck"}],
+                                    "neck"; "elbow_left"; "elbow_right"; "hand_left"; "hand_right"}],
                     links<-[{auto
                         [[PointLink from="neck", to="chest"]];
                         [[PointLink from="chest", to="waist"]];
+                        [[PointLink from="chest", to="elbow_left"]];
+                        [[PointLink from="chest", to="elbow_right"]];
+                        [[PointLink from="elbow_left", to="hand_left"]];
+                        [[PointLink from="elbow_right", to="hand_right"]];
                         [[PointLink from="waist", to="knee_left"]];
                         [[PointLink from="waist", to="knee_right"]];
                         [[PointLink from="knee_left", to="heel_left"]];
@@ -44,12 +62,40 @@ let shared BodyPlans <- {{
                             "heel_left" => [[PointTransform translation=float2(-0.25, 0.05)]];
                             "heel_right" => [[PointTransform translation=float2(0.25, 0.05)]];
                             "foot_left" => [[PointTransform translation=float2(-0.35, 0.02)]];
-                            "foot_right" => [[PointTransform translation=float2(0.35, 0.02)]]
+                            "foot_right" => [[PointTransform translation=float2(0.35, 0.02)]];
+                            "elbow_left" => [[PointTransform translation=float2(-0.3, 1.05)]];
+                            "elbow_right" => [[PointTransform translation=float2(0.3, 1.05)]];
+                            "hand_left" => [[PointTransform translation=float2(-0.27, 0.75)]];
+                            "hand_right" => [[PointTransform translation=float2(0.27, 0.75)]]
                         }}]]
                     }}
                 ]]
 }}
 
+def initialize_body_state(body: string; starting_posture: string)
+    var ret = new BodyState
+    let bodyPlanP = find(BodyPlans, body)
+    assert(bodyPlanP != null, "Unknown body plan")
+    let postureP = find(deref(bodyPlanP).postures, starting_posture)
+    assert(postureP != null, "Posture not found")
+    for p in deref(bodyPlanP).points
+        let tm = find(deref(postureP).transforms, p)
+        assert(tm != null, "Point transform from body plan not found in posture")
+        ret.pointTransforms[p] = deref(tm)
+    return ret
+
+// TODO animation
+def get_target_body_state(body: string; starting_posture: string)
+    var ret = new BodyState
+    let bodyPlanP = find(BodyPlans, body)
+    assert(bodyPlanP != null, "Unknown body plan")
+    let postureP = find(deref(bodyPlanP).postures, starting_posture)
+    assert(postureP != null, "Posture not found")
+    for p in deref(bodyPlanP).points
+        let tm = find(deref(postureP).transforms, p)
+        assert(tm != null, "Point transform from body plan not found in posture")
+        ret.pointTransforms[p] = deref(tm)
+    return ret
 
 [decs_template]
 struct Character
@@ -58,14 +104,7 @@ struct Character
     tm: PointTransform
     body: string
     posture: string
-    // pointTms: array<PointTransform>
-
-def create_player_knight(pos: float2; size: float)
-    var tm <- [[PointTransform translation=pos, rotation=0.0]]
-    create_entity <| @ (eid, cmp)
-        cmp |> set("eid", eid)
-        apply_decs_template(cmp, [[Character size = size, flipped = false, body="knight", posture="idle", tm=tm]])
-    commit()
+    bodyState: BodyState?
 
 // def make_particle(pos, vel: float2; radius: float)
 //     create_entity <| @ ( eid, cmp )
@@ -91,4 +130,23 @@ def create_player_knight(pos: float2; size: float)
 
 [decs(stage = draw)]
 def draw_character(var c: Character)
-    fill_circle(c.tm.translation.x, c.tm.translation.y, 0.1*c.size, 0xFFFFFF)
+    assert(c.bodyState != null, "bodyState is null on character")
+    let bodyPlanP = find(BodyPlans, c.body)
+    assert(bodyPlanP != null, "Unknown body plan")
+    for link in bodyPlanP.links
+        let fromTm = find(c.bodyState.pointTransforms, link.from)
+        let toTm = find(c.bodyState.pointTransforms, link.to)
+        assert(fromTm != null)
+        assert(toTm != null)
+        let transformedFromTm = transformTmTm(c.tm, deref(fromTm))
+        let transformedToTm = transformTmTm(c.tm, deref(toTm))
+        fill_circle(transformedFromTm.translation.x, -transformedFromTm.translation.y, 0.02*c.size, 0xFFFFFF)
+        fill_circle(transformedToTm.translation.x, -transformedToTm.translation.y, 0.02*c.size, 0xFFFFFF)
+        pass
+
+def create_character_entity(body: string; starting_posture: string; pos: float2; size: float)
+    var tm <- [[PointTransform translation=pos, rotation=0.0]]
+    create_entity <| @ (eid, cmp)
+        cmp |> set("eid", eid)
+        apply_decs_template(cmp, [[Character size = size, flipped = false, body=body, posture=starting_posture, tm=tm, bodyState=initialize_body_state(body, starting_posture)]])
+    commit()
