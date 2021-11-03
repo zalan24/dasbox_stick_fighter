@@ -324,50 +324,46 @@ def initialize_body_state(body: string; starting_posture: string)
         ret.pointTmDerivatives[name] = [[PointTransform translation=float2(0.0), rotation=0.0]]
     return ret
 
-def get_target_body_state(body: string implicit; starting_posture: string implicit; animation : Animation const?; animationState: float)
+def get_target_body_state(body: string implicit; starting_posture: string implicit; animationStates : AnimationStates const? implicit)
     var ret = new BodyState
     let bodyPlanP = find(BodyPlans, body)
     assert(bodyPlanP != null, "Unknown body plan")
     let postureP = find(deref(bodyPlanP).postures, starting_posture)
     assert(postureP != null, "Posture not found")
 
-    var a = 0
-    var b = 0
-    var localPhase = 0.0
-    if animation != null
-        a = 0
-        b = length(animation.frames)
-        while a+1 < b
-            let m = (a+b)/2
-            if animation.frames[m].time <= animationState
-                a = m
-            else
-                b = m
-        b = (a+1) % length(animation.frames)
-        // a = 0
-        // b = 1
-        localPhase = (animationState - animation.frames[a].time)
-        if localPhase < 0.0
-            localPhase += 1.0
-        if animation.frames[b].time > animation.frames[a].time
-            localPhase /= animation.frames[b].time - animation.frames[a].time
-        else
-            localPhase /= animation.frames[b].time + 1.0 - animation.frames[a].time
-        // localPhase = animationState
-
     for name, data in keys(bodyPlanP.points), values(bodyPlanP.points)
         let tm = find(deref(postureP).transforms, name)
         assert(tm != null, "Point transform from body plan not found in posture")
         ret.pointTransforms[name] = deref(tm)
         ret.pointTmDerivatives[name] = [[PointTransform translation=float2(0.0), rotation=0.0]]
-        if animation != null
-            // ret.pointTransforms[name].translation += float2(1.0, 1.0)
+
+    for animState in animationStates.states
+        let animationP = find(Animations, animState.name)
+        assert(animationP != null, "Animation not found")
+        var a = 0
+        var b = length(animationP.frames)
+        while a+1 < b
+            let m = (a+b)/2
+            if animationP.frames[m].time <= animState.phase
+                a = m
+            else
+                b = m
+        b = (a+1) % length(animationP.frames)
+        var localPhase = (animState.phase - animationP.frames[a].time)
+        if localPhase < 0.0
+            localPhase += 1.0
+        if animationP.frames[b].time > animationP.frames[a].time
+            localPhase /= animationP.frames[b].time - animationP.frames[a].time
+        else
+            localPhase /= animationP.frames[b].time + 1.0 - animationP.frames[a].time
+
+        for name, data in keys(bodyPlanP.points), values(bodyPlanP.points)
             var sumWeight = 0.0
             for animPoint, weight in keys(data.animationWeight), values(data.animationWeight)
-                let startTmP = find(animation.frames[a].transformations, animPoint)
-                let startTmDP = find(animation.frames[a].tmDerivatives, animPoint)
-                let endTmP = find(animation.frames[b].transformations, animPoint)
-                let endTmDP = find(animation.frames[b].tmDerivatives, animPoint)
+                let startTmP = find(animationP.frames[a].transformations, animPoint)
+                let startTmDP = find(animationP.frames[a].tmDerivatives, animPoint)
+                let endTmP = find(animationP.frames[b].transformations, animPoint)
+                let endTmDP = find(animationP.frames[b].tmDerivatives, animPoint)
                 assert(startTmP != null)
                 assert(startTmDP != null)
                 assert(endTmP != null)
@@ -387,6 +383,14 @@ def get_target_body_state(body: string implicit; starting_posture: string implic
             assert(sumWeight <= 1.0, "Sum of animation weights exceeded 1")
     return ret
 
+struct AnimationState
+    name: string
+    phase: float
+    repeating: bool
+
+struct AnimationStates
+    states: array<AnimationState>
+
 [decs_template]
 struct Character
     size: float = 1.0
@@ -395,22 +399,26 @@ struct Character
     body: string
     posture: string
     bodyState: BodyState?
-    currentAnimation: string
-    animationTime: float
-
+    animationState: AnimationStates?
 
 [decs(stage = update)]
 def update_character_animation(var c: Character&)
     let dt = get_delta_time()
-    var animation : Animation const? = null
-    if c.currentAnimation != ""
-        let animationP = find(Animations, c.currentAnimation)
+    for state in c.animationState.states
+        let animationP = find(Animations, state.name)
         assert(animationP != null, "Animation not found")
-        animation = animationP
-        c.animationTime += dt / animationP.duration
-        if c.animationTime >= 1.0
-            c.animationTime -= 1.0
-    let targetState = get_target_body_state(c.body, c.posture, animation, c.animationTime)
+        state.phase += dt / animationP.duration
+        if state.phase >= 1.0
+            if state.repeating
+                state.phase -= 1.0
+    var i = 0
+    while i < length(c.animationState.states)
+        if c.animationState.states[i].phase >= 1.0
+            unsafe
+                var goodArray = reinterpret<AnimationStates?> c.animationState
+                goodArray.states |> erase(i)
+            break
+    let targetState = get_target_body_state(c.body, c.posture, c.animationState)
     c.bodyState = targetState
 
 [decs(stage = draw)]
@@ -441,8 +449,18 @@ def create_character_entity(body: string; starting_posture: string; pos: float2;
     var tm <- [[PointTransform translation=pos, rotation=0.0]]
     create_entity <| @ (eid, cmp)
         cmp |> set("eid", eid)
-        apply_decs_template(cmp, [[Character size = size, flipped = false, body=body, posture=starting_posture, tm=tm, bodyState=initialize_body_state(body, starting_posture), animationTime=0.0]])
+        apply_decs_template(cmp, [[Character size = size, flipped = false, body=body, posture=starting_posture, tm=tm, bodyState=initialize_body_state(body, starting_posture), animationState=new AnimationStates]])
     commit()
+
+def addAnimation(var c: Character&; animation: string; repeated: bool)
+    c.animationState.states |> push([[AnimationState name=animation, repeating=repeated, phase=0.0]])
+
+// def removeAnimation(var c: Character&; animation: string)
+//     let nameMatch <- @ <| (state : AnimationState)
+//         return state.name == animation
+//     let toRemove = find_index_if(c.animationState.states, nameMatch)
+//     if toRemove > -1
+//         erase(c.animationState.states, toRemove)
 
 def exportCharacters()
     pass
