@@ -2,9 +2,9 @@ require daslib/media
 require daslib/decs_boost
 require characters
 require platform
+require drawplatform
 
 var frameTime : float = 0.0
-
 
 def initialize_level()
     create_platform_entity(float2(0.0, -1.0), float2(10.0, 0.1))
@@ -20,7 +20,7 @@ def initialize(is_hard_reload: bool)
 
     if is_hard_reload
         initialize_level()
-        create_player(float2(-2.0, -1.0), 1.0)
+        create_player(float2(-2.0, 1.0), 1.0)
         create_bug(float2(-0.66, 0.7), 1.0)
         create_mosquito(float2(0.66, -1.0), 1.0)
         // create_character_entity("knight", "default", float2(2.0, 0.7), 1.0)

@@ -1,8 +1,9 @@
 require daslib/media
 require daslib/decs_boost
 require daslib/json
+require platform
 
-// let editor_mode : bool = true
+let gravity = -9.8
 
 struct PointTransform
     translation: float2 = float2(0.0, 0.0)
@@ -404,6 +405,8 @@ enum ControllerType
 
 [decs_template]
 struct Character
+    gravity: bool
+    speed: float2
     size: float = 1.0
     flipped: bool = false
     tm: PointTransform
@@ -416,6 +419,18 @@ struct Character
 [decs(stage = update)]
 def update_character_animation(var c: Character&)
     let dt = get_delta_time()
+
+    if c.gravity
+        c.speed.y += dt*gravity
+    if c.speed.y < 0.0
+        query() <| $(platform: Platform; eid: EntityId)
+            let top = platform.pos.y + platform.size.y/2.0
+            if c.tm.translation.x + c.size*0.2 > platform.pos.x-platform.size.x/2.0 && c.tm.translation.x - c.size*0.2 < platform.pos.x+platform.size.x/2.0
+                if c.tm.translation.y >= top && c.tm.translation.y + dt*c.speed.y < top
+                    c.tm.translation.y = top+0.0001
+                    c.speed.y = 0.0
+    c.tm.translation += c.speed * dt
+
     for state in c.animationState.states
         let animationP = find(Animations, state.name)
         assert(animationP != null, "Animation not found")
@@ -457,21 +472,21 @@ def draw_character(var c: Character)
             let size = 0.02 * c.size * lerp(link.fromSizeMul,link.toSizeMul,t)
             fill_circle(pos.x, -pos.y, size, 0xFFFFFF)
 
-def create_character_entity(body: string; starting_posture: string; pos: float2; size: float; controller: ControllerType)
+def create_character_entity(body: string; starting_posture: string; pos: float2; size: float; controller: ControllerType; gravity: bool)
     var tm <- [[PointTransform translation=pos, rotation=0.0]]
     create_entity <| @ (eid, cmp)
         cmp |> set("eid", eid)
-        apply_decs_template(cmp, [[Character size = size, flipped = false, body=body, posture=starting_posture, tm=tm, bodyState=initialize_body_state(body, starting_posture), animationState=new AnimationStates, controller = controller]])
+        apply_decs_template(cmp, [[Character size = size, flipped = false, body=body, posture=starting_posture, tm=tm, bodyState=initialize_body_state(body, starting_posture), animationState=new AnimationStates, controller = controller, gravity=gravity]])
     commit()
 
 def create_player(pos: float2; size: float)
-    create_character_entity("knight", "default", pos, size, ControllerType User)
+    create_character_entity("knight", "default", pos, size, ControllerType User, true)
 
 def create_bug(pos: float2; size: float)
-    create_character_entity("bug", "default", pos, size, ControllerType Bug)
+    create_character_entity("bug", "default", pos, size, ControllerType Bug, true)
 
 def create_mosquito(pos: float2; size: float)
-    create_character_entity("mosquito", "default", pos, size, ControllerType Mosquito)
+    create_character_entity("mosquito", "default", pos, size, ControllerType Mosquito, false)
 
 def addAnimation(var c: Character&; animation: string; repeated: bool)
     c.animationState.states |> push([[AnimationState name=animation, repeating=repeated, phase=0.0]])
