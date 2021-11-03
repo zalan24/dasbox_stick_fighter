@@ -4,6 +4,10 @@ require daslib/json
 require platform
 
 let gravity = -9.8
+let bugSpeed = 0.8
+let mosquitoSpeed0 = 0.1
+let mosquitoSpeed = 5.0
+let mosquitoAttachTime = 3.0
 var seed : int4
 
 struct PointTransform
@@ -141,9 +145,28 @@ var Animations <- {{
                             tmDerivatives<-{{"wing" => [[PointTransform translation=float2(0.0, 0.0)]]}}
                         ]];
                         [[AnimationFrame
-                            time=0.25,
+                            time=0.5,
                             transformations<-{{"wing" => [[PointTransform translation=float2(0.0, -1.0)]]}},
                             tmDerivatives<-{{"wing" => [[PointTransform translation=float2(0.0, 0.0)]]}}
+                        ]]
+                    }]
+                ]];
+    "mosquito_attack" => [[Animation duration=mosquitoAttachTime, points<-[{auto "wind"}],
+                frames<-[{auto
+                        [[AnimationFrame
+                            time=0.0,
+                            transformations<-{{"wind" => [[PointTransform translation=float2(0.0, 0.0)]]}},
+                            tmDerivatives<-{{"wind" => [[PointTransform translation=float2(0.0, 0.0)]]}}
+                        ]];
+                        [[AnimationFrame
+                            time=0.05,
+                            transformations<-{{"wind" => [[PointTransform translation=float2(-0.1, 0.0)]]}},
+                            tmDerivatives<-{{"wind" => [[PointTransform translation=float2(0.0, 0.0)]]}}
+                        ]];
+                        [[AnimationFrame
+                            time=0.95,
+                            transformations<-{{"wind" => [[PointTransform translation=float2(0.0, 0.0)]]}},
+                            tmDerivatives<-{{"wind" => [[PointTransform translation=float2(0.0, 0.0)]]}}
                         ]]
                     }]
                 ]]
@@ -266,13 +289,13 @@ var BodyPlans <- {{
                         "leg_source1" => [[BodyPoint animationWeight<-{{"wing" => -0.01}}]];
                         "leg_source2" => [[BodyPoint animationWeight<-{{"wing" => -0.01}}]];
                         "leg_source3" => [[BodyPoint animationWeight<-{{"wing" => -0.01}}]];
-                        "leg1" => [[BodyPoint animationWeight<-{{"wing" => -0.005}}]];
-                        "leg2" => [[BodyPoint animationWeight<-{{"wing" => -0.005}}]];
-                        "leg3" => [[BodyPoint animationWeight<-{{"wing" => -0.005}}]];
+                        "leg1" => [[BodyPoint animationWeight<-{{"wing" => -0.005; "wind" => 1.0}}]];
+                        "leg2" => [[BodyPoint animationWeight<-{{"wing" => -0.005; "wind" => 1.0}}]];
+                        "leg3" => [[BodyPoint animationWeight<-{{"wing" => -0.005; "wind" => 1.0}}]];
                         "back" => [[BodyPoint animationWeight<-{{"wing" => -0.007}}]];
                         "spike" => [[BodyPoint animationWeight<-{{"wing" => -0.01}}]];
-                        "wing_left" => [[BodyPoint animationWeight<-{{"wing" => 0.3}}]];
-                        "wing_right" => [[BodyPoint animationWeight<-{{"wing" => 0.3}}]]
+                        "wing_left" => [[BodyPoint animationWeight<-{{"wing" => 0.3; "wind" => 0.3}}]];
+                        "wing_right" => [[BodyPoint animationWeight<-{{"wing" => 0.3; "wind" => 0.3}}]]
                     }},
                     links<-[{auto
                         [[PointLink from="head", to="back", fromAngleOffset=0.0, toAngleOffset=PI/2.0+0.3, curveStrength=0.4, fromSizeMul=0.5, toSizeMul=0.5]];
@@ -486,13 +509,27 @@ def update_character_animation(var c: Character&)
                 if c.speed.x == 0.0
                     addAnimation(c.animationState, "bug_running", true)
                 if playerPos.x < c.tm.translation.x
-                    c.speed.x = -c.size*0.8
+                    c.speed.x = -c.size*bugSpeed
                 else
-                    c.speed.x = c.size*0.8
+                    c.speed.x = c.size*bugSpeed
             else
                 c.speed.x = 0.0
                 c.timer = -2.0
                 removeAnimation(c.animationState, "bug_running")
+    if c.controller == ControllerType Mosquito
+        if c.timer > 1.0
+            let dir = normalize(playerPos - c.tm.translation)
+            if playerFound
+                c.speed = mosquitoSpeed0 * dir
+                if c.timer > 2.0
+                    c.speed = mosquitoSpeed * dir
+                    c.timer = -mosquitoAttachTime
+                    addAnimation(c.animationState, "mosquito_attack", false)
+            else
+                c.timer = -2.0
+        if c.timer > -1.0 && length(c.speed) > mosquitoSpeed*0.9
+            c.speed = float2(0.0, 0.0)
+            c.timer -= random_float(seed)*3.0
 
     if c.gravity
         c.speed.y += dt*gravity
@@ -502,7 +539,11 @@ def update_character_animation(var c: Character&)
             if c.tm.translation.x + c.size*0.2 > platform.pos.x-platform.size.x/2.0 && c.tm.translation.x - c.size*0.2 < platform.pos.x+platform.size.x/2.0
                 if c.tm.translation.y >= top && c.tm.translation.y + dt*c.speed.y < top
                     c.tm.translation.y = top+0.0001
-                    c.speed.y = 0.0
+                    if c.controller == ControllerType Mosquito
+                        c.speed = normalize(-c.speed) * 0.05
+                        removeAnimation(c.animationState, "mosquito_attack")
+                    else
+                        c.speed.y = 0.0
     c.tm.translation += c.speed * dt
     if c.speed.x < 0.0
         c.flipped = true
