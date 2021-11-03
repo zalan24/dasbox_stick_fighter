@@ -381,7 +381,7 @@ struct Character
     gravity: bool
     speed: float2
     size: float = 1.0
-    flipped: bool = false
+    flipped: bool
     tm: PointTransform
     body: string
     posture: string
@@ -411,8 +411,10 @@ def draw_character(var c: Character)
         let polynomial = getConnectingPolynomial(transformedFromTm, transformedToTm, c.size*link.curveStrength)
         for i in range(100)
             let t = float(i) / 100.0
-            let pos = polynomial[0] * t*t*t + polynomial[1] * t*t + polynomial[2] * t + polynomial[3]
+            var pos = polynomial[0] * t*t*t + polynomial[1] * t*t + polynomial[2] * t + polynomial[3]
             let size = 0.02 * c.size * lerp(link.fromSizeMul,link.toSizeMul,t)
+            if c.flipped
+                pos.x = c.tm.translation.x - (pos.x - c.tm.translation.x)
             fill_circle(pos.x, -pos.y, size, 0xFFFFFF)
 
 def create_character_entity(body: string; starting_posture: string; pos: float2; size: float; controller: ControllerType; gravity: bool)
@@ -452,8 +454,25 @@ def update_character_animation(var c: Character&)
         elif c.body == "mosquito"
             addAnimation(c.animationState, "mosquito_idle", true)
         c.initialized = true
+    var playerPos = float2(0.0, 0.0)
+    var playerFound = false
+    query() <| $(c2: Character; eid: EntityId)
+        if c2.controller == ControllerType User
+            playerPos = c2.tm.translation
+            playerFound = true
 
     c.timer += dt
+
+    if c.controller == ControllerType Bug
+        if c.timer > 0.5
+            c.timer = 0.0
+            if playerFound
+                if playerPos.x < c.tm.translation.x
+                    c.speed.x = -c.size*0.8
+                else
+                    c.speed.x = c.size*0.8
+            else
+                c.speed.x = 0.0
 
     if c.gravity
         c.speed.y += dt*gravity
@@ -465,6 +484,10 @@ def update_character_animation(var c: Character&)
                     c.tm.translation.y = top+0.0001
                     c.speed.y = 0.0
     c.tm.translation += c.speed * dt
+    if c.speed.x < 0.0
+        c.flipped = true
+    elif c.speed.x > 0.0
+        c.flipped = false
 
     for state in c.animationState.states
         let animationP = find(Animations, state.name)
