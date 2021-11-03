@@ -94,71 +94,47 @@ struct Animation
     frames: array<AnimationFrame>
 
 var Animations <- {{
-    "test" => [[Animation duration=3.0, points<-[{auto "leg_left"; "leg_right"}],
+    "bug_idle" => [[Animation duration=2.0, points<-[{auto "body"; "antenna1"; "antenna2"}],
                 frames<-[{auto
                         [[AnimationFrame
                             time=0.0,
-                            transformations<-{{"leg_left" => [[PointTransform translation=float2(-1.0, 0.0)]]; "leg_right" => [[PointTransform translation=float2(1.0, 0.0)]]}},
-                            tmDerivatives<-{{"leg_left" => [[PointTransform translation=float2(0.0, 0.0)]]; "leg_right" => [[PointTransform translation=float2(0.0, 0.0)]]}}
+                            transformations<-{{"body" => [[PointTransform translation=float2(0.0, 0.0)]]; "antenna1" => [[PointTransform translation=float2(0.0, 0.0)]]; "antenna2" => [[PointTransform translation=float2(0.1, 0.0)]]}},
+                            tmDerivatives<-{{"body" => [[PointTransform translation=float2(0.0, 0.0)]]; "antenna1" => [[PointTransform translation=float2(0.0, 0.0)]]; "antenna2" => [[PointTransform translation=float2(0.0, 0.0)]]}}
+                        ]];
+                        [[AnimationFrame
+                            time=0.25,
+                            transformations<-{{"body" => [[PointTransform translation=float2(0.0, 0.02)]]; "antenna1" => [[PointTransform translation=float2(0.05, 0.0)]]; "antenna2" => [[PointTransform translation=float2(0.05, 0.0)]]}},
+                            tmDerivatives<-{{"body" => [[PointTransform translation=float2(0.0, 0.0)]]; "antenna1" => [[PointTransform translation=float2(0.0, 0.0)]]; "antenna2" => [[PointTransform translation=float2(0.0, 0.0)]]}}
                         ]];
                         [[AnimationFrame
                             time=0.5,
-                            transformations<-{{"leg_left" => [[PointTransform translation=float2(1.0, 0.0)]]; "leg_right" => [[PointTransform translation=float2(-1.0, 0.0)]]}},
-                            tmDerivatives<-{{"leg_left" => [[PointTransform translation=float2(0.0, 0.0)]]; "leg_right" => [[PointTransform translation=float2(0.0, 0.0)]]}}
+                            transformations<-{{"body" => [[PointTransform translation=float2(0.0, 0.0)]]; "antenna1" => [[PointTransform translation=float2(0.1, 0.0)]]; "antenna2" => [[PointTransform translation=float2(0.0, 0.0)]]}},
+                            tmDerivatives<-{{"body" => [[PointTransform translation=float2(0.0, 0.0)]]; "antenna1" => [[PointTransform translation=float2(0.0, 0.0)]]; "antenna2" => [[PointTransform translation=float2(0.0, 0.0)]]}}
+                        ]];
+                        [[AnimationFrame
+                            time=0.75,
+                            transformations<-{{"body" => [[PointTransform translation=float2(0.0, 0.02)]]; "antenna1" => [[PointTransform translation=float2(0.05, 0.0)]]; "antenna2" => [[PointTransform translation=float2(0.05, 0.0)]]}},
+                            tmDerivatives<-{{"body" => [[PointTransform translation=float2(0.0, 0.0)]]; "antenna1" => [[PointTransform translation=float2(0.0, 0.0)]]; "antenna2" => [[PointTransform translation=float2(0.0, 0.0)]]}}
+                        ]]
+                    }]
+                ]];
+    "mosquito_idle" => [[Animation duration=0.51, points<-[{auto "wing"}],
+                frames<-[{auto
+                        [[AnimationFrame
+                            time=0.0,
+                            transformations<-{{"wing" => [[PointTransform translation=float2(0.0, 0.0)]]}},
+                            tmDerivatives<-{{"wing" => [[PointTransform translation=float2(0.0, 0.0)]]}}
+                        ]];
+                        [[AnimationFrame
+                            time=0.25,
+                            transformations<-{{"wing" => [[PointTransform translation=float2(0.0, -1.0)]]}},
+                            tmDerivatives<-{{"wing" => [[PointTransform translation=float2(0.0, 0.0)]]}}
                         ]]
                     }]
                 ]]
 }}
 
 var BodyPlans <- {{
-    // "knight" => [[BodyPlan
-    //                 points<-{{
-    //                     "chest" => [[BodyPoint]];
-    //                     "waist" => [[BodyPoint]];
-    //                     "knee_left" => [[BodyPoint animationWeight<-{{"leg_left" => 0.3}}]];
-    //                     "knee_right" => [[BodyPoint animationWeight<-{{"leg_right" => 0.3}}]];
-    //                     "heel_left" => [[BodyPoint animationWeight<-{{"leg_left" => 0.9}}]];
-    //                     "heel_right" => [[BodyPoint animationWeight<-{{"leg_right" => 0.9}}]];
-    //                     "foot_left" => [[BodyPoint animationWeight<-{{"leg_left" => 0.9}}]];
-    //                     "foot_right" => [[BodyPoint animationWeight<-{{"leg_right" => 0.9}}]];
-    //                     "neck" => [[BodyPoint ]];
-    //                     "elbow_left" => [[BodyPoint ]];
-    //                     "elbow_right" => [[BodyPoint ]];
-    //                     "hand_left" => [[BodyPoint ]];
-    //                     "hand_right" => [[BodyPoint ]]
-    //                 }},
-    //                 links<-[{auto
-    //                     [[PointLink from="neck", to="chest"]];
-    //                     [[PointLink from="chest", to="waist"]];
-    //                     [[PointLink from="chest", to="elbow_left", curveStrength=0.5, fromAngleOffset=-PI/2.0]];
-    //                     [[PointLink from="chest", to="elbow_right", curveStrength=0.5, fromAngleOffset=PI/2.0]];
-    //                     [[PointLink from="elbow_left", to="hand_left"]];
-    //                     [[PointLink from="elbow_right", to="hand_right"]];
-    //                     [[PointLink from="waist", to="knee_left", curveStrength=0.3]];
-    //                     [[PointLink from="waist", to="knee_right", curveStrength=0.3]];
-    //                     [[PointLink from="knee_left", to="heel_left", curveStrength=0.5, fromAngleOffset=PI]];
-    //                     [[PointLink from="knee_right", to="heel_right", curveStrength=0.5, fromAngleOffset=PI]];
-    //                     [[PointLink from="heel_left", to="foot_left", curveStrength=0.1, fromAngleOffset=PI/2.0, toAngleOffset=-PI/2.0]];
-    //                     [[PointLink from="heel_right", to="foot_right", curveStrength=0.1, fromAngleOffset=-PI/2.0, toAngleOffset=PI/2.0]]
-    //                 }],
-    //                 postures<-{{
-    //                     "default" => [[Posture transforms<-{{
-    //                         "chest" => [[PointTransform translation=float2(0.0, 1.5)]];
-    //                         "neck" => [[PointTransform translation=float2(0.0, 1.6)]];
-    //                         "waist" => [[PointTransform translation=float2(0.0, 0.9)]];
-    //                         "knee_left" => [[PointTransform translation=float2(-0.3, 0.45)]];
-    //                         "knee_right" => [[PointTransform translation=float2(0.3, 0.45)]];
-    //                         "heel_left" => [[PointTransform translation=float2(-0.25, 0.05)]];
-    //                         "heel_right" => [[PointTransform translation=float2(0.25, 0.05)]];
-    //                         "foot_left" => [[PointTransform translation=float2(-0.35, 0.02)]];
-    //                         "foot_right" => [[PointTransform translation=float2(0.35, 0.02)]];
-    //                         "elbow_left" => [[PointTransform translation=float2(-0.3, 1.1)]];
-    //                         "elbow_right" => [[PointTransform translation=float2(0.3, 1.1)]];
-    //                         "hand_left" => [[PointTransform translation=float2(-0.27, 0.75)]];
-    //                         "hand_right" => [[PointTransform translation=float2(0.27, 0.75)]]
-    //                     }}]]
-    //                 }}
-    //             ]]
     "knight" => [[BodyPlan
                     points<-{{
                         "chest" => [[BodyPoint]];
@@ -225,17 +201,17 @@ var BodyPlans <- {{
                 ]];
     "bug" => [[BodyPlan
                     points<-{{
-                        "head" => [[BodyPoint]];
-                        "butt" => [[BodyPoint]];
-                        "leg_source1" => [[BodyPoint]];
-                        "leg_source2" => [[BodyPoint]];
-                        "leg_source3" => [[BodyPoint]];
+                        "head" => [[BodyPoint animationWeight<-{{"body" => 1.0}}]];
+                        "butt" => [[BodyPoint animationWeight<-{{"body" => 1.0}}]];
+                        "leg_source1" => [[BodyPoint animationWeight<-{{"body" => 1.0}}]];
+                        "leg_source2" => [[BodyPoint animationWeight<-{{"body" => 1.0}}]];
+                        "leg_source3" => [[BodyPoint animationWeight<-{{"body" => 1.0}}]];
                         "leg1" => [[BodyPoint]];
                         "leg2" => [[BodyPoint]];
                         "leg3" => [[BodyPoint]];
-                        "back" => [[BodyPoint]];
-                        "antenna_left" => [[BodyPoint]];
-                        "antenna_right" => [[BodyPoint]]
+                        "back" => [[BodyPoint animationWeight<-{{"body" => 1.0}}]];
+                        "antenna_left" => [[BodyPoint animationWeight<-{{"body" => 0.5; "antenna1" => 0.5}}]];
+                        "antenna_right" => [[BodyPoint animationWeight<-{{"body" => 0.5; "antenna2" => 0.5}}]]
                     }},
                     links<-[{auto
                         [[PointLink from="head", to="back", fromAngleOffset=0.0, toAngleOffset=PI/2.0, curveStrength=0.4, fromSizeMul=0.5, toSizeMul=0.5]];
@@ -270,18 +246,18 @@ var BodyPlans <- {{
                 ]];
     "mosquito" => [[BodyPlan
                     points<-{{
-                        "head" => [[BodyPoint]];
-                        "butt" => [[BodyPoint]];
-                        "leg_source1" => [[BodyPoint]];
-                        "leg_source2" => [[BodyPoint]];
-                        "leg_source3" => [[BodyPoint]];
-                        "leg1" => [[BodyPoint]];
-                        "leg2" => [[BodyPoint]];
-                        "leg3" => [[BodyPoint]];
-                        "back" => [[BodyPoint]];
-                        "spike" => [[BodyPoint]];
-                        "wing_left" => [[BodyPoint]];
-                        "wing_right" => [[BodyPoint]]
+                        "head" => [[BodyPoint animationWeight<-{{"wing" => -0.01}}]];
+                        "butt" => [[BodyPoint animationWeight<-{{"wing" => -0.01}}]];
+                        "leg_source1" => [[BodyPoint animationWeight<-{{"wing" => -0.01}}]];
+                        "leg_source2" => [[BodyPoint animationWeight<-{{"wing" => -0.01}}]];
+                        "leg_source3" => [[BodyPoint animationWeight<-{{"wing" => -0.01}}]];
+                        "leg1" => [[BodyPoint animationWeight<-{{"wing" => -0.005}}]];
+                        "leg2" => [[BodyPoint animationWeight<-{{"wing" => -0.005}}]];
+                        "leg3" => [[BodyPoint animationWeight<-{{"wing" => -0.005}}]];
+                        "back" => [[BodyPoint animationWeight<-{{"wing" => -0.007}}]];
+                        "spike" => [[BodyPoint animationWeight<-{{"wing" => -0.01}}]];
+                        "wing_left" => [[BodyPoint animationWeight<-{{"wing" => 0.3}}]];
+                        "wing_right" => [[BodyPoint animationWeight<-{{"wing" => 0.3}}]]
                     }},
                     links<-[{auto
                         [[PointLink from="head", to="back", fromAngleOffset=0.0, toAngleOffset=PI/2.0+0.3, curveStrength=0.4, fromSizeMul=0.5, toSizeMul=0.5]];
@@ -365,7 +341,6 @@ def get_target_body_state(body: string implicit; starting_posture: string implic
             localPhase /= animationP.frames[b].time + 1.0 - animationP.frames[a].time
 
         for name, data in keys(bodyPlanP.points), values(bodyPlanP.points)
-            var sumWeight = 0.0
             for animPoint, weight in keys(data.animationWeight), values(data.animationWeight)
                 let startTmP = find(animationP.frames[a].transformations, animPoint)
                 let startTmDP = find(animationP.frames[a].tmDerivatives, animPoint)
@@ -382,12 +357,10 @@ def get_target_body_state(body: string implicit; starting_posture: string implic
                         float3(endTmDP.translation, endTmDP.rotation))
                 let posAngleOffest = polynomial[0] * localPhase*localPhase*localPhase + polynomial[1] * localPhase*localPhase + polynomial[2] * localPhase + polynomial[3]
                 let derivatevePosAngleOffset = 3.0 * polynomial[0] * localPhase*localPhase + 2.0 * polynomial[1] * localPhase + polynomial[2]
-                sumWeight += weight
                 ret.pointTransforms[name].translation += weight * posAngleOffest.xy
                 ret.pointTransforms[name].rotation = normalize_angle(ret.pointTransforms[name].rotation + weight * posAngleOffest.z)
                 ret.pointTmDerivatives[name].translation += weight * derivatevePosAngleOffset.xy
                 ret.pointTmDerivatives[name].rotation = normalize_angle(ret.pointTmDerivatives[name].rotation + weight * derivatevePosAngleOffset.z)
-            assert(sumWeight <= 1.0, "Sum of animation weights exceeded 1")
     return ret
 
 struct AnimationState
@@ -415,38 +388,8 @@ struct Character
     controller: ControllerType
     bodyState: BodyState?
     animationState: AnimationStates?
-
-[decs(stage = update)]
-def update_character_animation(var c: Character&)
-    let dt = get_delta_time()
-
-    if c.gravity
-        c.speed.y += dt*gravity
-    if c.speed.y < 0.0
-        query() <| $(platform: Platform; eid: EntityId)
-            let top = platform.pos.y + platform.size.y/2.0
-            if c.tm.translation.x + c.size*0.2 > platform.pos.x-platform.size.x/2.0 && c.tm.translation.x - c.size*0.2 < platform.pos.x+platform.size.x/2.0
-                if c.tm.translation.y >= top && c.tm.translation.y + dt*c.speed.y < top
-                    c.tm.translation.y = top+0.0001
-                    c.speed.y = 0.0
-    c.tm.translation += c.speed * dt
-
-    for state in c.animationState.states
-        let animationP = find(Animations, state.name)
-        assert(animationP != null, "Animation not found")
-        state.phase += dt / animationP.duration
-        if state.phase >= 1.0
-            if state.repeating
-                state.phase -= 1.0
-    var i = 0
-    while i < length(c.animationState.states)
-        if c.animationState.states[i].phase >= 1.0
-            unsafe
-                var goodArray = reinterpret<AnimationStates?> c.animationState
-                goodArray.states |> erase(i)
-            break
-    let targetState = get_target_body_state(c.body, c.posture, c.animationState)
-    c.bodyState = targetState
+    timer: float
+    initialized: bool
 
 [decs(stage = draw)]
 def draw_character(var c: Character)
@@ -476,7 +419,7 @@ def create_character_entity(body: string; starting_posture: string; pos: float2;
     var tm <- [[PointTransform translation=pos, rotation=0.0]]
     create_entity <| @ (eid, cmp)
         cmp |> set("eid", eid)
-        apply_decs_template(cmp, [[Character size = size, flipped = false, body=body, posture=starting_posture, tm=tm, bodyState=initialize_body_state(body, starting_posture), animationState=new AnimationStates, controller = controller, gravity=gravity]])
+        apply_decs_template(cmp, [[Character size = size, flipped = false, body=body, posture=starting_posture, tm=tm, bodyState=initialize_body_state(body, starting_posture), animationState=new AnimationStates, controller = controller, gravity=gravity, initialized=false]])
     commit()
 
 def create_player(pos: float2; size: float)
@@ -488,8 +431,9 @@ def create_bug(pos: float2; size: float)
 def create_mosquito(pos: float2; size: float)
     create_character_entity("mosquito", "default", pos, size, ControllerType Mosquito, false)
 
-def addAnimation(var c: Character&; animation: string; repeated: bool)
-    c.animationState.states |> push([[AnimationState name=animation, repeating=repeated, phase=0.0]])
+def addAnimation(var animationState: AnimationStates? implicit; animation: string; repeated: bool)
+    assert(animationState != null)
+    animationState.states |> push([[AnimationState name=animation, repeating=repeated, phase=0.0]])
 
 // def removeAnimation(var c: Character&; animation: string)
 //     let nameMatch <- @ <| (state : AnimationState)
@@ -497,6 +441,49 @@ def addAnimation(var c: Character&; animation: string; repeated: bool)
 //     let toRemove = find_index_if(c.animationState.states, nameMatch)
 //     if toRemove > -1
 //         erase(c.animationState.states, toRemove)
+
+
+[decs(stage = update)]
+def update_character_animation(var c: Character&)
+    let dt = get_delta_time()
+    if !c.initialized
+        if c.body == "bug"
+            addAnimation(c.animationState, "bug_idle", true)
+        elif c.body == "mosquito"
+            addAnimation(c.animationState, "mosquito_idle", true)
+        c.initialized = true
+
+    c.timer += dt
+
+    if c.gravity
+        c.speed.y += dt*gravity
+    if c.speed.y < 0.0
+        query() <| $(platform: Platform; eid: EntityId)
+            let top = platform.pos.y + platform.size.y/2.0
+            if c.tm.translation.x + c.size*0.2 > platform.pos.x-platform.size.x/2.0 && c.tm.translation.x - c.size*0.2 < platform.pos.x+platform.size.x/2.0
+                if c.tm.translation.y >= top && c.tm.translation.y + dt*c.speed.y < top
+                    c.tm.translation.y = top+0.0001
+                    c.speed.y = 0.0
+    c.tm.translation += c.speed * dt
+
+    for state in c.animationState.states
+        let animationP = find(Animations, state.name)
+        assert(animationP != null, "Animation not found")
+        state.phase += dt / animationP.duration
+        if state.phase >= 1.0
+            if state.repeating
+                state.phase -= 1.0
+    var i = 0
+    while i < length(c.animationState.states)
+        if c.animationState.states[i].phase >= 1.0
+            unsafe
+                var goodArray = reinterpret<AnimationStates?> c.animationState
+                goodArray.states |> erase(i)
+            break
+        i++
+    let targetState = get_target_body_state(c.body, c.posture, c.animationState)
+    c.bodyState = targetState
+
 
 def exportCharacters()
     pass

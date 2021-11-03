@@ -21,8 +21,9 @@ def initialize(is_hard_reload: bool)
     if is_hard_reload
         initialize_level()
         create_player(float2(-2.0, 1.0), 1.0)
-        create_bug(float2(-0.66, 0.7), 1.0)
-        create_mosquito(float2(0.66, -1.0), 1.0)
+        create_bug(float2(-4.5, 1.5), 1.0)
+        create_bug(float2(4.5, 1.5), 1.0)
+        create_mosquito(float2(5.0, 3.0), 1.0)
         // create_character_entity("knight", "default", float2(2.0, 0.7), 1.0)
 
 [export]
