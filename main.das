@@ -16,7 +16,7 @@ def initialize(is_hard_reload: bool)
     if is_hard_reload
         // create_player_knight(float2(0.0, 0.0), 1.0)
         create_character_entity("knight", "default", float2(-2.0, -1.0), 1.0)
-        create_character_entity("knight", "default", float2(-0.66, 0.7), 1.0)
+        create_character_entity("bug", "default", float2(-0.66, 0.7), 1.0)
         create_character_entity("knight", "default", float2(0.66, -1.0), 1.0)
         create_character_entity("knight", "default", float2(2.0, 0.7), 1.0)
 
