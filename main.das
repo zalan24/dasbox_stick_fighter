@@ -1,11 +1,16 @@
 require daslib/media
 require daslib/decs_boost
 require characters
+require platform
 
 var frameTime : float = 0.0
 
-def create_player_knight(pos: float2; size: float)
-    create_character_entity("knight", "default", pos, size)
+
+def initialize_level()
+    create_platform_entity(float2(0.0, -1.0), float2(10.0, 0.1))
+    create_platform_entity(float2(-4.5, 1.0), float2(2.0, 0.1))
+    create_platform_entity(float2(4.5, 1.0), float2(2.0, 0.1))
+    create_platform_entity(float2(0.0, 3.0), float2(2.0, 0.1))
 
 [export]
 def initialize(is_hard_reload: bool)
@@ -14,10 +19,10 @@ def initialize(is_hard_reload: bool)
     // exportCharacters()
 
     if is_hard_reload
-        // create_player_knight(float2(0.0, 0.0), 1.0)
-        create_character_entity("knight", "default", float2(-2.0, -1.0), 1.0)
-        create_character_entity("bug", "default", float2(-0.66, 0.7), 1.0)
-        create_character_entity("mosquito", "default", float2(0.66, -1.0), 1.0)
+        initialize_level()
+        create_player(float2(-2.0, -1.0), 1.0)
+        create_bug(float2(-0.66, 0.7), 1.0)
+        create_mosquito(float2(0.66, -1.0), 1.0)
         // create_character_entity("knight", "default", float2(2.0, 0.7), 1.0)
 
 [export]
@@ -31,7 +36,7 @@ def act(dt: float)
 
 [export]
 def draw
-    setup_2d_camera(float2(0.0, -0.7), 200.0)
+    setup_2d_camera(float2(0.0, -2.5), 100.0)
     decs_stage("draw")
     setup_2d_camera(float2(get_screen_width() / 2, get_screen_height() / 2), 1.0)
 

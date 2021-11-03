@@ -175,7 +175,9 @@ var BodyPlans <- {{
                         "ear_inner_left" => [[BodyPoint]];
                         "ear_inner_right" => [[BodyPoint]];
                         "ear_outter_left" => [[BodyPoint]];
-                        "ear_outter_right" => [[BodyPoint]]
+                        "ear_outter_right" => [[BodyPoint]];
+                        "eye_left" => [[BodyPoint]];
+                        "eye_right" => [[BodyPoint]]
                     }},
                     links<-[{auto
                         [[PointLink from="chin", to="chest", fromAngleOffset=-PI, curveStrength=0.3, fromSizeMul=0.5, toSizeMul=2.0]];
@@ -193,7 +195,9 @@ var BodyPlans <- {{
                         [[PointLink from="head_side_right", to="ear_outter_right", fromAngleOffset=1.0, toAngleOffset=0.7, curveStrength=0.35, fromSizeMul=0.5, toSizeMul=0.5]];
                         [[PointLink from="head_side_left", to="ear_outter_left", fromAngleOffset=-1.0, toAngleOffset=-0.7, curveStrength=0.35, fromSizeMul=0.5, toSizeMul=0.5]];
                         [[PointLink from="head_top_right", to="ear_inner_right", fromAngleOffset=1.0, toAngleOffset=2.0, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
-                        [[PointLink from="head_top_left", to="ear_inner_left", fromAngleOffset=-1.0, toAngleOffset=-2.0, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]]
+                        [[PointLink from="head_top_left", to="ear_inner_left", fromAngleOffset=-1.0, toAngleOffset=-2.0, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="eye_left", to="eye_left", fromSizeMul=2.5, toSizeMul=2.5]];
+                        [[PointLink from="eye_right", to="eye_right", fromSizeMul=2.5, toSizeMul=2.5]]
                     }],
                     postures<-{{
                         "default" => [[Posture transforms<-{{
@@ -212,7 +216,9 @@ var BodyPlans <- {{
                             "ear_inner_left" => [[PointTransform translation=float2(-0.14, 1.16)]];
                             "ear_inner_right" => [[PointTransform translation=float2(0.14, 1.16)]];
                             "ear_outter_left" => [[PointTransform translation=float2(-0.18, 1.19)]];
-                            "ear_outter_right" => [[PointTransform translation=float2(0.18, 1.19)]]
+                            "ear_outter_right" => [[PointTransform translation=float2(0.18, 1.19)]];
+                            "eye_left" => [[PointTransform translation=float2(-0.08, 0.765)]];
+                            "eye_right" => [[PointTransform translation=float2(0.08, 0.765)]]
                         }}]]
                     }}
                 ]];
@@ -391,6 +397,11 @@ struct AnimationState
 struct AnimationStates
     states: array<AnimationState>
 
+enum ControllerType
+    User
+    Bug
+    Mosquito
+
 [decs_template]
 struct Character
     size: float = 1.0
@@ -398,6 +409,7 @@ struct Character
     tm: PointTransform
     body: string
     posture: string
+    controller: ControllerType
     bodyState: BodyState?
     animationState: AnimationStates?
 
@@ -445,12 +457,21 @@ def draw_character(var c: Character)
             let size = 0.02 * c.size * lerp(link.fromSizeMul,link.toSizeMul,t)
             fill_circle(pos.x, -pos.y, size, 0xFFFFFF)
 
-def create_character_entity(body: string; starting_posture: string; pos: float2; size: float)
+def create_character_entity(body: string; starting_posture: string; pos: float2; size: float; controller: ControllerType)
     var tm <- [[PointTransform translation=pos, rotation=0.0]]
     create_entity <| @ (eid, cmp)
         cmp |> set("eid", eid)
-        apply_decs_template(cmp, [[Character size = size, flipped = false, body=body, posture=starting_posture, tm=tm, bodyState=initialize_body_state(body, starting_posture), animationState=new AnimationStates]])
+        apply_decs_template(cmp, [[Character size = size, flipped = false, body=body, posture=starting_posture, tm=tm, bodyState=initialize_body_state(body, starting_posture), animationState=new AnimationStates, controller = controller]])
     commit()
+
+def create_player(pos: float2; size: float)
+    create_character_entity("knight", "default", pos, size, ControllerType User)
+
+def create_bug(pos: float2; size: float)
+    create_character_entity("bug", "default", pos, size, ControllerType Bug)
+
+def create_mosquito(pos: float2; size: float)
+    create_character_entity("mosquito", "default", pos, size, ControllerType Mosquito)
 
 def addAnimation(var c: Character&; animation: string; repeated: bool)
     c.animationState.states |> push([[AnimationState name=animation, repeating=repeated, phase=0.0]])
