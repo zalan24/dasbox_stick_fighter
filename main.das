@@ -11,6 +11,8 @@ def create_player_knight(pos: float2; size: float)
 def initialize(is_hard_reload: bool)
     set_window_title("Stick Fight")
 
+    // exportCharacters()
+
     if is_hard_reload
         create_player_knight(float2(0.0, 0.0), 1.0)
 
@@ -34,5 +36,7 @@ def draw
 
     let mousePos = get_mouse_position()
     fill_circle(int(mousePos.x), int(mousePos.y), 5, 0xFFFF80)
+
+    // if editor_mode
 
     return
