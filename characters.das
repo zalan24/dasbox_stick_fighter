@@ -8,6 +8,14 @@ let bugSpeed = 0.8
 let mosquitoSpeed0 = 0.1
 let mosquitoSpeed = 5.0
 let mosquitoAttachTime = 3.0
+let TotalNumJumps = 2
+let jumpSpeed = 3.5
+let smoothJumpTime = 0.4
+let smoothJumpStrength = 0.3
+let playerSpeed = 2.0
+let playerAcc = 100.0
+let knightAttachCooldown = 0.3
+
 var seed : int4
 
 struct PointTransform
@@ -169,6 +177,20 @@ var Animations <- {{
                             tmDerivatives<-{{"wind" => [[PointTransform translation=float2(0.0, 0.0)]]}}
                         ]]
                     }]
+                ]];
+    "knight_attack" => [[Animation duration=0.3, points<-[{auto "sword"; "hand"}],
+                frames<-[{auto
+                        [[AnimationFrame
+                            time=0.0,
+                            transformations<-{{"sword" => [[PointTransform translation=float2(0.0, 0.0), rotation=0.0]]; "hand" => [[PointTransform translation=float2(0.0, 0.0), rotation=0.0]]}},
+                            tmDerivatives<-{{"sword" => [[PointTransform translation=float2(0.0, 0.0), rotation=0.0]]; "hand" => [[PointTransform translation=float2(0.0, 0.0), rotation=0.0]]}}
+                        ]];
+                        [[AnimationFrame
+                            time=0.3,
+                            transformations<-{{"sword" => [[PointTransform translation=float2(0.1, -0.5), rotation=0.0]]; "hand" => [[PointTransform translation=float2(00.0, 0.0), rotation=3.0]]}},
+                            tmDerivatives<-{{"sword" => [[PointTransform translation=float2(0.0, 0.0), rotation=0.0]]; "hand" => [[PointTransform translation=float2(0.0, 0.0), rotation=0.0]]}}
+                        ]]
+                    }]
                 ]]
 }}
 
@@ -180,8 +202,8 @@ var BodyPlans <- {{
                         "leg_left" => [[BodyPoint]];
                         "leg_right" => [[BodyPoint]];
                         "hand_left" => [[BodyPoint]];
-                        "hand_right" => [[BodyPoint]];
-                        "sword_top" => [[BodyPoint]];
+                        "hand_right" => [[BodyPoint animationWeight<-{{"sword" => 0.4; "hand" => 0.4}}]];
+                        "sword_top" => [[BodyPoint animationWeight<-{{"sword" => 1.0}}]];
                         "chin" => [[BodyPoint]];
                         "head_side_left" => [[BodyPoint]];
                         "head_side_right" => [[BodyPoint]];
@@ -201,7 +223,7 @@ var BodyPlans <- {{
                         [[PointLink from="waist", to="leg_right", fromAngleOffset=PI/2.0, curveStrength=0.3, fromSizeMul=2.0, toSizeMul=0.5]];
                         [[PointLink from="chest", to="hand_left", fromAngleOffset=-PI/2.0, curveStrength=0.5, fromSizeMul=2.0, toSizeMul=0.5]];
                         [[PointLink from="chest", to="hand_right", fromAngleOffset=PI/2.0, curveStrength=0.5, fromSizeMul=2.0, toSizeMul=0.5]];
-                        [[PointLink from="hand_right", to="sword_top", fromAngleOffset=PI/4.0, toAngleOffset=PI/4.0, curveStrength=0.5, fromSizeMul=2.0, toSizeMul=0.05]];
+                        [[PointLink from="hand_right", to="sword_top", fromAngleOffset=PI/4.0, toAngleOffset=PI/4.0, curveStrength=0.0, fromSizeMul=2.0, toSizeMul=0.05]];
                         [[PointLink from="head_side_left", to="chin", fromAngleOffset=PI, toAngleOffset=-PI/2.0, curveStrength=0.55, fromSizeMul=0.5, toSizeMul=0.5]];
                         [[PointLink from="head_side_right", to="chin", fromAngleOffset=PI, toAngleOffset=PI/2.0, curveStrength=0.55, fromSizeMul=0.5, toSizeMul=0.5]];
                         [[PointLink from="head_top_left", to="head_top_right", fromAngleOffset=PI/2.0-0.4, toAngleOffset=-PI/2.0+0.4, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
@@ -429,6 +451,8 @@ struct Character
     animationState: AnimationStates?
     timer: float
     initialized: bool
+    numJumps: int
+    smoothJump: float
 
 [decs(stage = draw)]
 def draw_character(var c: Character)
@@ -530,6 +554,25 @@ def update_character_animation(var c: Character&)
         if c.timer > -1.0 && length(c.speed) > mosquitoSpeed*0.9
             c.speed = float2(0.0, 0.0)
             c.timer -= random_float(seed)*3.0
+    if c.controller == ControllerType User
+        if c.speed.y == 0.0
+            c.numJumps = TotalNumJumps
+            c.smoothJump = 1.0
+        if get_key_down(VK_Z) && c.numJumps > 0
+            c.speed.y = jumpSpeed
+            c.numJumps--
+        if c.smoothJump > 0.0 && get_key(VK_Z)
+            c.speed.y += c.smoothJump * smoothJumpStrength
+            c.smoothJump -= dt / smoothJumpTime
+        var targetSpeed = 0.0
+        if get_key(VK_LEFT)
+            targetSpeed = -playerSpeed
+        elif get_key(VK_RIGHT)
+            targetSpeed = playerSpeed
+        if get_key_down(VK_X) && c.timer > knightAttachCooldown
+            c.timer = 0.0
+            addAnimation(c.animationState, "knight_attack", false)
+        c.speed.x = move_to(c.speed.x, targetSpeed, dt, playerAcc)
 
     if c.gravity
         c.speed.y += dt*gravity
