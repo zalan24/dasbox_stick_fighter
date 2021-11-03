@@ -67,6 +67,8 @@ struct PointLink
     toAngleOffset : float = 0.0
     width : float = 1.0
     curveStrength : float = 1.0
+    fromSizeMul : float = 1.0
+    toSizeMul : float = 1.0
 
 struct BodyPoint
     animationWeight: table<string; float>
@@ -108,51 +110,109 @@ var Animations <- {{
 }}
 
 var BodyPlans <- {{
+    // "knight" => [[BodyPlan
+    //                 points<-{{
+    //                     "chest" => [[BodyPoint]];
+    //                     "waist" => [[BodyPoint]];
+    //                     "knee_left" => [[BodyPoint animationWeight<-{{"leg_left" => 0.3}}]];
+    //                     "knee_right" => [[BodyPoint animationWeight<-{{"leg_right" => 0.3}}]];
+    //                     "heel_left" => [[BodyPoint animationWeight<-{{"leg_left" => 0.9}}]];
+    //                     "heel_right" => [[BodyPoint animationWeight<-{{"leg_right" => 0.9}}]];
+    //                     "foot_left" => [[BodyPoint animationWeight<-{{"leg_left" => 0.9}}]];
+    //                     "foot_right" => [[BodyPoint animationWeight<-{{"leg_right" => 0.9}}]];
+    //                     "neck" => [[BodyPoint ]];
+    //                     "elbow_left" => [[BodyPoint ]];
+    //                     "elbow_right" => [[BodyPoint ]];
+    //                     "hand_left" => [[BodyPoint ]];
+    //                     "hand_right" => [[BodyPoint ]]
+    //                 }},
+    //                 links<-[{auto
+    //                     [[PointLink from="neck", to="chest"]];
+    //                     [[PointLink from="chest", to="waist"]];
+    //                     [[PointLink from="chest", to="elbow_left", curveStrength=0.5, fromAngleOffset=-PI/2.0]];
+    //                     [[PointLink from="chest", to="elbow_right", curveStrength=0.5, fromAngleOffset=PI/2.0]];
+    //                     [[PointLink from="elbow_left", to="hand_left"]];
+    //                     [[PointLink from="elbow_right", to="hand_right"]];
+    //                     [[PointLink from="waist", to="knee_left", curveStrength=0.3]];
+    //                     [[PointLink from="waist", to="knee_right", curveStrength=0.3]];
+    //                     [[PointLink from="knee_left", to="heel_left", curveStrength=0.5, fromAngleOffset=PI]];
+    //                     [[PointLink from="knee_right", to="heel_right", curveStrength=0.5, fromAngleOffset=PI]];
+    //                     [[PointLink from="heel_left", to="foot_left", curveStrength=0.1, fromAngleOffset=PI/2.0, toAngleOffset=-PI/2.0]];
+    //                     [[PointLink from="heel_right", to="foot_right", curveStrength=0.1, fromAngleOffset=-PI/2.0, toAngleOffset=PI/2.0]]
+    //                 }],
+    //                 postures<-{{
+    //                     "default" => [[Posture transforms<-{{
+    //                         "chest" => [[PointTransform translation=float2(0.0, 1.5)]];
+    //                         "neck" => [[PointTransform translation=float2(0.0, 1.6)]];
+    //                         "waist" => [[PointTransform translation=float2(0.0, 0.9)]];
+    //                         "knee_left" => [[PointTransform translation=float2(-0.3, 0.45)]];
+    //                         "knee_right" => [[PointTransform translation=float2(0.3, 0.45)]];
+    //                         "heel_left" => [[PointTransform translation=float2(-0.25, 0.05)]];
+    //                         "heel_right" => [[PointTransform translation=float2(0.25, 0.05)]];
+    //                         "foot_left" => [[PointTransform translation=float2(-0.35, 0.02)]];
+    //                         "foot_right" => [[PointTransform translation=float2(0.35, 0.02)]];
+    //                         "elbow_left" => [[PointTransform translation=float2(-0.3, 1.1)]];
+    //                         "elbow_right" => [[PointTransform translation=float2(0.3, 1.1)]];
+    //                         "hand_left" => [[PointTransform translation=float2(-0.27, 0.75)]];
+    //                         "hand_right" => [[PointTransform translation=float2(0.27, 0.75)]]
+    //                     }}]]
+    //                 }}
+    //             ]]
     "knight" => [[BodyPlan
                     points<-{{
                         "chest" => [[BodyPoint]];
                         "waist" => [[BodyPoint]];
-                        "knee_left" => [[BodyPoint animationWeight<-{{"leg_left" => 0.3}}]];
-                        "knee_right" => [[BodyPoint animationWeight<-{{"leg_right" => 0.3}}]];
-                        "heel_left" => [[BodyPoint animationWeight<-{{"leg_left" => 0.9}}]];
-                        "heel_right" => [[BodyPoint animationWeight<-{{"leg_right" => 0.9}}]];
-                        "foot_left" => [[BodyPoint animationWeight<-{{"leg_left" => 0.9}}]];
-                        "foot_right" => [[BodyPoint animationWeight<-{{"leg_right" => 0.9}}]];
-                        "neck" => [[BodyPoint ]];
-                        "elbow_left" => [[BodyPoint ]];
-                        "elbow_right" => [[BodyPoint ]];
-                        "hand_left" => [[BodyPoint ]];
-                        "hand_right" => [[BodyPoint ]]
+                        "leg_left" => [[BodyPoint]];
+                        "leg_right" => [[BodyPoint]];
+                        "hand_left" => [[BodyPoint]];
+                        "hand_right" => [[BodyPoint]];
+                        "sword_top" => [[BodyPoint]];
+                        "chin" => [[BodyPoint]];
+                        "head_side_left" => [[BodyPoint]];
+                        "head_side_right" => [[BodyPoint]];
+                        "head_top_left" => [[BodyPoint]];
+                        "head_top_right" => [[BodyPoint]];
+                        "ear_inner_left" => [[BodyPoint]];
+                        "ear_inner_right" => [[BodyPoint]];
+                        "ear_outter_left" => [[BodyPoint]];
+                        "ear_outter_right" => [[BodyPoint]]
                     }},
                     links<-[{auto
-                        [[PointLink from="neck", to="chest"]];
-                        [[PointLink from="chest", to="waist"]];
-                        [[PointLink from="chest", to="elbow_left", curveStrength=0.5, fromAngleOffset=-PI/2.0]];
-                        [[PointLink from="chest", to="elbow_right", curveStrength=0.5, fromAngleOffset=PI/2.0]];
-                        [[PointLink from="elbow_left", to="hand_left"]];
-                        [[PointLink from="elbow_right", to="hand_right"]];
-                        [[PointLink from="waist", to="knee_left", curveStrength=0.3]];
-                        [[PointLink from="waist", to="knee_right", curveStrength=0.3]];
-                        [[PointLink from="knee_left", to="heel_left", curveStrength=0.3]];
-                        [[PointLink from="knee_right", to="heel_right", curveStrength=0.3]];
-                        [[PointLink from="heel_left", to="foot_left", curveStrength=0.1, fromAngleOffset=PI/2.0, toAngleOffset=-PI/2.0]];
-                        [[PointLink from="heel_right", to="foot_right", curveStrength=0.1, fromAngleOffset=-PI/2.0, toAngleOffset=PI/2.0]]
+                        [[PointLink from="chin", to="chest", fromAngleOffset=-PI, curveStrength=0.3, fromSizeMul=0.5, toSizeMul=2.0]];
+                        [[PointLink from="chest", to="waist", fromAngleOffset=-PI, curveStrength=0.3, fromSizeMul=2.0, toSizeMul=2.0]];
+                        [[PointLink from="waist", to="leg_left", fromAngleOffset=-PI/2.0, curveStrength=0.3, fromSizeMul=2.0, toSizeMul=0.5]];
+                        [[PointLink from="waist", to="leg_right", fromAngleOffset=PI/2.0, curveStrength=0.3, fromSizeMul=2.0, toSizeMul=0.5]];
+                        [[PointLink from="chest", to="hand_left", fromAngleOffset=-PI/2.0, curveStrength=0.5, fromSizeMul=2.0, toSizeMul=0.5]];
+                        [[PointLink from="chest", to="hand_right", fromAngleOffset=PI/2.0, curveStrength=0.5, fromSizeMul=2.0, toSizeMul=0.5]];
+                        [[PointLink from="hand_right", to="sword_top", fromAngleOffset=PI/4.0, toAngleOffset=PI/4.0, curveStrength=0.5, fromSizeMul=2.0, toSizeMul=0.05]];
+                        [[PointLink from="head_side_left", to="chin", fromAngleOffset=PI, toAngleOffset=-PI/2.0, curveStrength=0.55, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="head_side_right", to="chin", fromAngleOffset=PI, toAngleOffset=PI/2.0, curveStrength=0.55, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="head_top_left", to="head_top_right", fromAngleOffset=PI/2.0-0.4, toAngleOffset=-PI/2.0+0.4, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="ear_outter_left", to="ear_inner_left", fromAngleOffset=0.0, toAngleOffset=-PI/2.0, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="ear_outter_right", to="ear_inner_right", fromAngleOffset=0.0, toAngleOffset=PI/2.0, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="head_side_right", to="ear_outter_right", fromAngleOffset=1.0, toAngleOffset=0.7, curveStrength=0.35, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="head_side_left", to="ear_outter_left", fromAngleOffset=-1.0, toAngleOffset=-0.7, curveStrength=0.35, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="head_top_right", to="ear_inner_right", fromAngleOffset=1.0, toAngleOffset=2.0, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="head_top_left", to="ear_inner_left", fromAngleOffset=-1.0, toAngleOffset=-2.0, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]]
                     }],
                     postures<-{{
-                        "idle" => [[Posture transforms<-{{
-                            "chest" => [[PointTransform translation=float2(0.0, 1.5)]];
-                            "neck" => [[PointTransform translation=float2(0.0, 1.6)]];
-                            "waist" => [[PointTransform translation=float2(0.0, 0.9)]];
-                            "knee_left" => [[PointTransform translation=float2(-0.3, 0.45)]];
-                            "knee_right" => [[PointTransform translation=float2(0.3, 0.45)]];
-                            "heel_left" => [[PointTransform translation=float2(-0.25, 0.05)]];
-                            "heel_right" => [[PointTransform translation=float2(0.25, 0.05)]];
-                            "foot_left" => [[PointTransform translation=float2(-0.35, 0.02)]];
-                            "foot_right" => [[PointTransform translation=float2(0.35, 0.02)]];
-                            "elbow_left" => [[PointTransform translation=float2(-0.3, 1.1)]];
-                            "elbow_right" => [[PointTransform translation=float2(0.3, 1.1)]];
-                            "hand_left" => [[PointTransform translation=float2(-0.27, 0.75)]];
-                            "hand_right" => [[PointTransform translation=float2(0.27, 0.75)]]
+                        "default" => [[Posture transforms<-{{
+                            "chest" => [[PointTransform translation=float2(0.0, 0.57)]];
+                            "waist" => [[PointTransform translation=float2(0.0, 0.25)]];
+                            "leg_left" => [[PointTransform translation=float2(-0.2, 0.0)]];
+                            "leg_right" => [[PointTransform translation=float2(0.2, 0.0)]];
+                            "hand_left" => [[PointTransform translation=float2(-0.3, 0.4)]];
+                            "hand_right" => [[PointTransform translation=float2(0.3, 0.4)]];
+                            "sword_top" => [[PointTransform translation=float2(0.5, 0.6)]];
+                            "chin" => [[PointTransform translation=float2(0.0, 0.64)]];
+                            "head_side_left" => [[PointTransform translation=float2(-0.2, 0.85)]];
+                            "head_side_right" => [[PointTransform translation=float2(0.2, 0.85)]];
+                            "head_top_left" => [[PointTransform translation=float2(-0.13, 0.92)]];
+                            "head_top_right" => [[PointTransform translation=float2(0.13, 0.92)]];
+                            "ear_inner_left" => [[PointTransform translation=float2(-0.14, 1.16)]];
+                            "ear_inner_right" => [[PointTransform translation=float2(0.14, 1.16)]];
+                            "ear_outter_left" => [[PointTransform translation=float2(-0.18, 1.19)]];
+                            "ear_outter_right" => [[PointTransform translation=float2(0.18, 1.19)]]
                         }}]]
                     }}
                 ]]
@@ -272,8 +332,8 @@ def draw_character(var c: Character)
         assert(toTm != null)
         var transformedFromTm = transformTmTm(c.tm, deref(fromTm))
         var transformedToTm = transformTmTm(c.tm, deref(toTm))
-        fill_circle(transformedFromTm.translation.x, -transformedFromTm.translation.y, 0.02*c.size, 0xFFFFFF)
-        fill_circle(transformedToTm.translation.x, -transformedToTm.translation.y, 0.02*c.size, 0xFFFFFF)
+        // fill_circle(transformedFromTm.translation.x, -transformedFromTm.translation.y, 0.02*c.size, 0xFFFFFF)
+        // fill_circle(transformedToTm.translation.x, -transformedToTm.translation.y, 0.02*c.size, 0xFFFFFF)
 
         transformedFromTm.rotation += link.fromAngleOffset
         transformedToTm.rotation += link.toAngleOffset
@@ -281,13 +341,14 @@ def draw_character(var c: Character)
         for i in range(100)
             let t = float(i) / 100.0
             let pos = polynomial[0] * t*t*t + polynomial[1] * t*t + polynomial[2] * t + polynomial[3]
-            fill_circle(pos.x, -pos.y, 0.02*c.size, 0xFFFFFF)
+            let size = 0.02 * c.size * lerp(link.fromSizeMul,link.toSizeMul,t)
+            fill_circle(pos.x, -pos.y, size, 0xFFFFFF)
 
 def create_character_entity(body: string; starting_posture: string; pos: float2; size: float)
     var tm <- [[PointTransform translation=pos, rotation=0.0]]
     create_entity <| @ (eid, cmp)
         cmp |> set("eid", eid)
-        apply_decs_template(cmp, [[Character size = size, flipped = false, body=body, posture=starting_posture, tm=tm, bodyState=initialize_body_state(body, starting_posture), animationTime=0.0, currentAnimation="test"]])
+        apply_decs_template(cmp, [[Character size = size, flipped = false, body=body, posture=starting_posture, tm=tm, bodyState=initialize_body_state(body, starting_posture), animationTime=0.0]])
     commit()
 
 def exportCharacters()

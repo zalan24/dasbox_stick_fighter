@@ -5,7 +5,7 @@ require characters
 var frameTime : float = 0.0
 
 def create_player_knight(pos: float2; size: float)
-    create_character_entity("knight", "idle", pos, size)
+    create_character_entity("knight", "default", pos, size)
 
 [export]
 def initialize(is_hard_reload: bool)
@@ -14,7 +14,11 @@ def initialize(is_hard_reload: bool)
     // exportCharacters()
 
     if is_hard_reload
-        create_player_knight(float2(0.0, 0.0), 1.0)
+        // create_player_knight(float2(0.0, 0.0), 1.0)
+        create_character_entity("knight", "default", float2(-2.0, -1.0), 1.0)
+        create_character_entity("knight", "default", float2(-0.66, 0.7), 1.0)
+        create_character_entity("knight", "default", float2(0.66, -1.0), 1.0)
+        create_character_entity("knight", "default", float2(2.0, 0.7), 1.0)
 
 [export]
 def act(dt: float)
