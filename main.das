@@ -44,9 +44,6 @@ def draw
     let fps = 1.0 / frameTime
     text_out(10, 10, "fps: {fps}", 0xF0F0F0)
 
-    let mousePos = get_mouse_position()
-    fill_circle(int(mousePos.x), int(mousePos.y), 5, 0xFFFF80)
-
     // if editor_mode
 
     return
