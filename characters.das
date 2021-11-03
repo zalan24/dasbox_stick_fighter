@@ -260,6 +260,54 @@ var BodyPlans <- {{
                             "antenna_right" => [[PointTransform translation=float2(0.34, 0.35)]]
                         }}]]
                     }}
+                ]];
+    "mosquito" => [[BodyPlan
+                    points<-{{
+                        "head" => [[BodyPoint]];
+                        "butt" => [[BodyPoint]];
+                        "leg_source1" => [[BodyPoint]];
+                        "leg_source2" => [[BodyPoint]];
+                        "leg_source3" => [[BodyPoint]];
+                        "leg1" => [[BodyPoint]];
+                        "leg2" => [[BodyPoint]];
+                        "leg3" => [[BodyPoint]];
+                        "back" => [[BodyPoint]];
+                        "spike" => [[BodyPoint]];
+                        "wing_left" => [[BodyPoint]];
+                        "wing_right" => [[BodyPoint]]
+                    }},
+                    links<-[{auto
+                        [[PointLink from="head", to="back", fromAngleOffset=0.0, toAngleOffset=PI/2.0+0.3, curveStrength=0.4, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="back", to="butt", fromAngleOffset=-PI/2.0+0.3, toAngleOffset=PI/3.5, curveStrength=0.3, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="butt", to="leg_source3", fromAngleOffset=PI/2.0, toAngleOffset=-PI/2.0, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="leg_source3", to="leg_source2", fromAngleOffset=PI/2.0, toAngleOffset=-PI/2.0, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="leg_source2", to="leg_source1", fromAngleOffset=PI/2.0, toAngleOffset=-PI/2.0, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="leg_source1", to="head", fromAngleOffset=PI/2.0, toAngleOffset=-PI/2.0, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="leg_source1", to="leg1", fromAngleOffset=PI+0.1, toAngleOffset=-0.2, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="leg_source2", to="leg2", fromAngleOffset=PI-0.1, toAngleOffset=0.2, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="leg_source3", to="leg3", fromAngleOffset=PI+0.1, toAngleOffset=-0.2, curveStrength=0.2, fromSizeMul=0.5, toSizeMul=0.5]];
+                        [[PointLink from="head", to="spike", fromAngleOffset=-0.5, toAngleOffset=-PI/4.0, curveStrength=0.3, fromSizeMul=0.5, toSizeMul=0.1]];
+                        [[PointLink from="back", to="wing_left", fromAngleOffset=-0.3, toAngleOffset=PI/2.0, curveStrength=0.3, fromSizeMul=0.3, toSizeMul=0.3]];
+                        [[PointLink from="back", to="wing_left", fromAngleOffset=-0.7, toAngleOffset=-PI/2.0, curveStrength=0.3, fromSizeMul=0.3, toSizeMul=0.3]];
+                        [[PointLink from="back", to="wing_right", fromAngleOffset=-0.3, toAngleOffset=PI/2.0, curveStrength=0.3, fromSizeMul=0.3, toSizeMul=0.3]];
+                        [[PointLink from="back", to="wing_right", fromAngleOffset=-0.7, toAngleOffset=-PI/2.0, curveStrength=0.3, fromSizeMul=0.3, toSizeMul=0.3]]
+                    }],
+                    postures<-{{
+                        "default" => [[Posture transforms<-{{
+                            "head" => [[PointTransform translation=float2(0.3, 0.1)]];
+                            "butt" => [[PointTransform translation=float2(-0.4, 0.3)]];
+                            "leg_source1" => [[PointTransform translation=float2(0.1, 0.15), rotation=0.3]];
+                            "leg_source2" => [[PointTransform translation=float2(-0.05, 0.2), rotation=0.3]];
+                            "leg_source3" => [[PointTransform translation=float2(-0.2, 0.25), rotation=0.3]];
+                            "leg1" => [[PointTransform translation=float2(0.1, 0.05)]];
+                            "leg2" => [[PointTransform translation=float2(-0.05, 0.10)]];
+                            "leg3" => [[PointTransform translation=float2(-0.2, 0.15)]];
+                            "back" => [[PointTransform translation=float2(0.1, 0.3), rotation=0.1]];
+                            "spike" => [[PointTransform translation=float2(0.4, 0.0)]];
+                            "wing_left" => [[PointTransform translation=float2(-0.2, 0.6), rotation=-0.2]];
+                            "wing_right" => [[PointTransform translation=float2(-0.3, 0.5), rotation=-0.2]]
+                        }}]]
+                    }}
                 ]]
 }}
 
