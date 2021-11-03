@@ -4,6 +4,7 @@ require daslib/json
 require platform
 
 let gravity = -9.8
+var seed : int4
 
 struct PointTransform
     translation: float2 = float2(0.0, 0.0)
@@ -118,6 +119,20 @@ var Animations <- {{
                         ]]
                     }]
                 ]];
+    "bug_running" => [[Animation duration=0.2, points<-[{auto "leg"}],
+                frames<-[{auto
+                        [[AnimationFrame
+                            time=0.0,
+                            transformations<-{{"leg" => [[PointTransform translation=float2(-0.01, 0.0), rotation=-0.6]]}},
+                            tmDerivatives<-{{"leg" => [[PointTransform translation=float2(0.0, -0.03), rotation=0.0]]}}
+                        ]];
+                        [[AnimationFrame
+                            time=0.5,
+                            transformations<-{{"leg" => [[PointTransform translation=float2(0.01, 0.0), rotation=0.6]]}},
+                            tmDerivatives<-{{"leg" => [[PointTransform translation=float2(0.0, 0.0), rotation=0.0]]}}
+                        ]]
+                    }]
+                ]];
     "mosquito_idle" => [[Animation duration=0.51, points<-[{auto "wing"}],
                 frames<-[{auto
                         [[AnimationFrame
@@ -206,9 +221,9 @@ var BodyPlans <- {{
                         "leg_source1" => [[BodyPoint animationWeight<-{{"body" => 1.0}}]];
                         "leg_source2" => [[BodyPoint animationWeight<-{{"body" => 1.0}}]];
                         "leg_source3" => [[BodyPoint animationWeight<-{{"body" => 1.0}}]];
-                        "leg1" => [[BodyPoint]];
-                        "leg2" => [[BodyPoint]];
-                        "leg3" => [[BodyPoint]];
+                        "leg1" => [[BodyPoint animationWeight<-{{"leg" => 1.0}}]];
+                        "leg2" => [[BodyPoint animationWeight<-{{"leg" => -1.0}}]];
+                        "leg3" => [[BodyPoint animationWeight<-{{"leg" => 1.0}}]];
                         "back" => [[BodyPoint animationWeight<-{{"body" => 1.0}}]];
                         "antenna_left" => [[BodyPoint animationWeight<-{{"body" => 0.5; "antenna1" => 0.5}}]];
                         "antenna_right" => [[BodyPoint animationWeight<-{{"body" => 0.5; "antenna2" => 0.5}}]]
@@ -343,10 +358,11 @@ def get_target_body_state(body: string implicit; starting_posture: string implic
         for name, data in keys(bodyPlanP.points), values(bodyPlanP.points)
             for animPoint, weight in keys(data.animationWeight), values(data.animationWeight)
                 let startTmP = find(animationP.frames[a].transformations, animPoint)
+                if startTmP == null
+                    continue
                 let startTmDP = find(animationP.frames[a].tmDerivatives, animPoint)
                 let endTmP = find(animationP.frames[b].transformations, animPoint)
                 let endTmDP = find(animationP.frames[b].tmDerivatives, animPoint)
-                assert(startTmP != null)
                 assert(startTmDP != null)
                 assert(endTmP != null)
                 assert(endTmDP != null)
@@ -437,12 +453,11 @@ def addAnimation(var animationState: AnimationStates? implicit; animation: strin
     assert(animationState != null)
     animationState.states |> push([[AnimationState name=animation, repeating=repeated, phase=0.0]])
 
-// def removeAnimation(var c: Character&; animation: string)
-//     let nameMatch <- @ <| (state : AnimationState)
-//         return state.name == animation
-//     let toRemove = find_index_if(c.animationState.states, nameMatch)
-//     if toRemove > -1
-//         erase(c.animationState.states, toRemove)
+def removeAnimation(var animationState: AnimationStates? implicit; animation: string)
+    for i in range(length(animationState.states))
+        if animationState.states[i].name == animation
+            erase(animationState.states, i)
+            break
 
 
 [decs(stage = update)]
@@ -466,13 +481,18 @@ def update_character_animation(var c: Character&)
     if c.controller == ControllerType Bug
         if c.timer > 0.5
             c.timer = 0.0
-            if playerFound
+            let p = random_float(seed)
+            if playerFound && p < 0.9
+                if c.speed.x == 0.0
+                    addAnimation(c.animationState, "bug_running", true)
                 if playerPos.x < c.tm.translation.x
                     c.speed.x = -c.size*0.8
                 else
                     c.speed.x = c.size*0.8
             else
                 c.speed.x = 0.0
+                c.timer = -2.0
+                removeAnimation(c.animationState, "bug_running")
 
     if c.gravity
         c.speed.y += dt*gravity
